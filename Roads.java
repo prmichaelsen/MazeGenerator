@@ -1,3 +1,5 @@
+import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -6,7 +8,7 @@ import java.util.Stack;
 
 public class Roads implements Runnable{
 
-	final static String newline = System.getProperty("line.separator");
+	private final static String newline = System.getProperty("line.separator");
 	public static final String character = "o'";
 	public static final String drawer = "  ";
 	public static final String enemy = "><";
@@ -25,15 +27,50 @@ public class Roads implements Runnable{
 	public ArrayList<String> gameReplay;
 	public Stack<Integer> path;
 	public static final int[][] DIRECTION = {
-			{0, -1}, //LEFT
-			{-1,  0}, //DOWN
-			{0,  1}, //RIGHT
-			{1, 0}};  //UP
+			{-1, -1}, //UP_LEFT
+			{-1,  0}, //UP_MID
+			{-1,  1}, //UP_RIGHT
+			
+			{ 0, -1}, //MID_LEFT
+			{ 0,  0}, //MID_MID
+			{ 0,  1}, //MID_RIGHT
+			
+			
+			{ 1, -1}, //LOW_LEFT
+			{ 1,  0}, //LOW_MID
+			{ 1,  1}, //LOW_RIGHT
+	};
+	
+	//COOOOOOOONSTAAAAAAAANTSSSSSSS
+	private final static Integer 
+		//to reference directions
+//		LEFT=0,DOWN=1,RIGHT=2,
+//		UP=3,DOWN_LEFT=4,DOWN_RIGHT=5,
+//		UP_RIGHT=6,UP_LEFT=7,MID=8,
+		
+		//to reference walls
+		WALL=0, PATH=1, OBJ=2,
+		UP_LEFT=0, 	UP_MID=1, 	UP_RIGHT=2,
+		MID_LEFT=3,	MID_MID=4,	MID_RIGHT=5,
+		LOW_LEFT=6,	LOW_MID=7,	LOW_RIGHT=8;
+		
+//		//to reference paths
+//		PATH=1,
+//		UP_LEFT_PATH=0, 	UP_MID_PATH=1, 	UP_RIGHT_PATH=2,
+//		MID_LEFT_PATH=3,	MID_MID_PATH=4, MID_RIGHT_PATH=5,
+//		DOWN_LEFT_PATH=6,	DOWN_MID_PATH=7,DOWN_RIGHT_PATH=8;
 	
 	public static final Random rnd = new Random();
 	public static final int ROAD_LENGTH = 3;
-	public int map[][];
+	public int roomMap[][];
+	public int objectMap[][];
 	int keyFrame;
+	static String[] wallSprites = new String[]{"X ","X ","X ","X ","X ","X ","X ","X ","X "};
+	static String[] pathSprites = new String[]{"  ","  ","  ","  ","  ","  ","  ","  ","  "};
+	static String[][] gameSprites = new String[][]{
+		wallSprites,
+		pathSprites,
+	};
 	static String[] sprites = new String[]{"X ","  ","  ","  ","  ","X ","X ","@ "};
 	static String[][] styles = new String[][]{
 		{"X ","  ","  ","  ","  ","X ","X ","@ "},
@@ -42,8 +79,7 @@ public class Roads implements Runnable{
 		{"  ","  ","  ","  ","  ","  ","  ","@ "}
 		};
 	public static int tiles[] = {1,0}; //ROAD, WALL
-	public static int Px;
-	public static int Py;
+	private Point player;
 	
 	public ArrayList<String> buildRoad(int x, int y, int size, int dir){
 		ArrayList<String> buildProcess = new ArrayList<String>();
@@ -68,13 +104,12 @@ public class Roads implements Runnable{
 				//System.out.println("x "+maxX+", y "+ maxY + ", maxSize " + pathMax+", size "+ path.size());
 				start = false;
 				//print(x,y);;
-				currentFrame= this.print(x, y, enemy);
+				currentFrame = this.getFrame();
 				//initialize a random list of directions
 				directions = 
 						new ArrayList<Integer>(
-								Arrays.asList(new Integer[]{0,1,2,3}));
+								Arrays.asList(new Integer[]{MID_LEFT,LOW_MID,MID_RIGHT,UP_MID}));
 				Collections.shuffle(directions);
-				
 				//check each direction to find a free direction
 				//if it is free, build the road and store the direction
 				//otherwise remove the direction and keep searching
@@ -82,12 +117,12 @@ public class Roads implements Runnable{
 //				System.out.println();
 				while(!directions.isEmpty() && can == false){
 					//print(x,y);
-					if(can = checkFree(x,y,size,dir=directions.remove(0),map)){
+					if(can = checkFree(x,y,size,dir=directions.remove(0),roomMap)){
 						for(int i = 0; i < roadLength; i++){
 							//System.out.println(this.print(x,y));
 							//buildProcess.add(this.print(x,y,drawer));
-							map[x][y]=dir+1;
-//							map[x][y]=path.size()+1;
+							roomMap[x][y]=1;
+//							roomMap[x][y]=path.size()+1;
 							x += DIRECTION[dir][0];
 							y += DIRECTION[dir][1];
 						}
@@ -115,31 +150,31 @@ public class Roads implements Runnable{
 			}
 			run = can;
 		}
-		for(int i=1;i<roomWidth/TILE_SIZE-1;i++){
-			for(int j=1;j<roomHeight/TILE_SIZE-1;j++){
-				boolean surroundedByRoad = true;
-				boolean touchAtLeastOneRoad = false;
-				boolean touchAtLeastOneWall = false;
-				boolean isWall = false;
-				if(map[i][j]==0||map[i][j]==5||map[i][j]==6)
-					isWall=true;
-				for(int k=0;k<4;k++){
-					int check = map[i+DIRECTION[k][0]][j+DIRECTION[k][1]];
-					//check if all adjacent blocks are road
-					//and if this block is wall
-					if(check>0&&check<5&&isWall){
-						map[i][j]=5;
-						touchAtLeastOneRoad=true;
-					}
-					if(check==0||check==5||check==6){
-						touchAtLeastOneWall=true;
-					}
-
-				}
-				if(!touchAtLeastOneWall&&isWall)
-					map[i][j]=6;
-			}
-		}
+//		for(int i=1;i<roomWidth/TILE_SIZE-1;i++){
+//			for(int j=1;j<roomHeight/TILE_SIZE-1;j++){
+//				boolean surroundedByRoad = true;
+//				boolean touchAtLeastOneRoad = false;
+//				boolean touchAtLeastOneWall = false;
+//				boolean isWall = false;
+//				if(roomMap[i][j]==0||roomMap[i][j]==5||roomMap[i][j]==6)
+//					isWall=true;
+//				for(int k=0;k<4;k++){
+//					int check = roomMap[i+DIRECTION[k][0]][j+DIRECTION[k][1]];
+//					//check if all adjacent blocks are road
+//					//and if this block is wall
+//					if(check>0&&check<5&&isWall){
+//						roomMap[i][j]=5;
+//						touchAtLeastOneRoad=true;
+//					}
+//					if(check==0||check==5||check==6){
+//						touchAtLeastOneWall=true;
+//					}
+//
+//				}
+//				if(!touchAtLeastOneWall&&isWall)
+//					roomMap[i][j]=6;
+//			}
+//		}
 		paused = false;
 		return buildProcess;
 	}
@@ -149,10 +184,10 @@ public class Roads implements Runnable{
 		for(int i = 0; i < roadLength+1; i++){
 			if(inBounds(x,y)){
 				if(i>0){
-					if(map[x][y]>0)
+					if(roomMap[x][y]>0)
 						can= false;
 				}else if(roadLength==1)
-					if(map[x][y]>0)
+					if(roomMap[x][y]>0)
 						can= false;
 			}else if(i < roadLength)
 				can= false;
@@ -170,71 +205,96 @@ public class Roads implements Runnable{
 		return true;
 	}
 	
+	private boolean inBounds(Point p){
+		return inBounds(p.x,p.y);
+	}
+	
 	public void build(){
 		gameReplay = buildRoad(roomWidth/TILE_SIZE/2,roomHeight/TILE_SIZE/2,2000,0);
 		keyFrame = gameReplay.size();
 	}
 	
-	public void reset(){
-		maxX=maxY=0;
-		Px = roomWidth/TILE_SIZE/2;
-		Py = roomHeight/TILE_SIZE/2;
-		map = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
+//	public void reset(){
+//		maxX=maxY=0;
+//		Px = roomWidth/TILE_SIZE/2;
+//		Py = roomHeight/TILE_SIZE/2;
+//		roomMap = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
+//		path = new Stack<Integer>();
+//		print(Px,Py,character);
+//		build();
+//	}
+	
+	public Roads (){
+		roadLength=ROAD_LENGTH;
+		roomWidth = ROOM_WIDTH;
+		roomHeight = ROOM_HEIGHT;
+		player = new Point(roomWidth/TILE_SIZE/2,roomHeight/TILE_SIZE/2);
+		roomMap = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
 		path = new Stack<Integer>();
-		print(Px,Py,character);
-		build();
+		gameReplay = new ArrayList<String>();
 	}
 	
 	public Roads (int length, int width, int height){
-		
+		this(length);
 		roomWidth = width*TILE_SIZE;
 		roomHeight = height*TILE_SIZE;
-		Px = roomWidth/TILE_SIZE/2;
-		Py = roomHeight/TILE_SIZE/2;
-		map = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
-		path = new Stack<Integer>();
-		gameReplay = new ArrayList<String>();
-		roadLength=length;
-		print(Px,Py,character);
 	}
 	
 	public Roads (int length){
-		roomWidth = ROOM_WIDTH;
-		roomHeight = ROOM_HEIGHT;
-		Px = roomWidth/TILE_SIZE/2;
-		Py = roomHeight/TILE_SIZE/2;
-		map = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
-		path = new Stack<Integer>();
-		gameReplay = new ArrayList<String>();
+		this();
 		roadLength=length;
-		print(Px,Py,character);
 	}
 	
-	public void rebuild (int length){
-		Px = roomWidth/TILE_SIZE/2;
-		Py = roomHeight/TILE_SIZE/2;
-		map = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
-		path = new Stack<Integer>();
-		roadLength=length;
-		build();
-	}
+//	public void rebuild (int length){
+//		Px = roomWidth/TILE_SIZE/2;
+//		Py = roomHeight/TILE_SIZE/2;
+//		roomMap = new int[roomWidth/TILE_SIZE][roomHeight/TILE_SIZE];
+//		path = new Stack<Integer>();
+//		roadLength=length;
+//		build();
+//	}
 	
-	public String print(int x, int y, String character){
+	public String getFrame(){
 		String result ="X ";
 		for(int i=0;i<roomHeight/TILE_SIZE +  1;i++)
 			result+="X ";
 		result+=newline+"X ";
 		for(int i=0;i<roomWidth/TILE_SIZE;i++){
 			for(int j=0;j<roomHeight/TILE_SIZE;j++){
-				if(x == i && y == j)
+				int toPrint = 0;
+				Point p = new Point(i,j);
+				boolean touchAtLeastOneRoad = false;
+				boolean touchAtLeastOneWall = false;
+				boolean isWall = false;
+				//locality array 
+				//(describes the immediate 
+				//surroundings of current block
+				boolean[] l = new boolean[9]; 
+				for(int dir=0;dir<DIRECTION.length;dir++){
+					l[dir]=isWall(move(p,dir));
+				}
+				int spriteType;
+				if(l[MID_MID])
+					spriteType = 0;
+				else
+					spriteType = 1;
+				//if the center is a wall
+//				if(l[MID]){
+//					type=0;
+//					if(l[UP_MID_WALL])
+//				}else{
+//					type=1;
+//				}
+				
+				if(player.x == i && player.y == j)
 					result+=character;
 				else if(maxX-DIRECTION[maxDir][0] == i && maxY-DIRECTION[maxDir][1] == j)
 					result+=sprites[7];
 				else
-					result+=sprites [map[i][j]];
-					//result+=(map[i][j] > 0)? "  " : "X ";
-					//result+=(map[i][j] > 0)? map[i][j]-1 + " ": "  ";
-					//result+=(map[i][j] > 10)? map[i][j]-1 : ((map[i][j]>0)? map[i][j]-1+" ":"  ");
+					result+=gameSprites[spriteType][0];
+					//result+=(roomMap[i][j] > 0)? "  " : "X ";
+					//result+=(roomMap[i][j] > 0)? roomMap[i][j]-1 + " ": "  ";
+					//result+=(roomMap[i][j] > 10)? roomMap[i][j]-1 : ((roomMap[i][j]>0)? roomMap[i][j]-1+" ":"  ");
 				
 			}
 			result+="X" + newline+"X ";
@@ -246,53 +306,111 @@ public class Roads implements Runnable{
 		return result;
 	}
 	
-	/*public static String print(int x, int y, String character, Roads road){
-		String result ="X ";
-		for(int i=0;i<ROOM_WIDTH/TILE_SIZE +  1;i++)
-			result+="X ";
-		result+=newline+"X ";
-		for(int i=0;i<ROOM_WIDTH/TILE_SIZE;i++){
-			for(int j=0;j<roomHeight/TILE_SIZE;j++){
-				if(x == i && y == j)
-					result+=character;
-				else
-					result+=(road.map[i][j] > 0)? "  " : "X ";
-					//result+=(map[i][j] > 0)? map[i][j]-1 + " ": 0 + " ";
-			}
-			result+="X" + newline+"X ";
-		}
-		for(int i=0;i<ROOM_WIDTH/TILE_SIZE +  1;i++)
-			result+="X ";
-		result+=newline;
-		//System.out.println(result);
-		return result;
-	}*/
+	private boolean isWall(int x, int y) {
+		return isWall(new Point(x,y));
+	}
+
+	public boolean[][] buildLocalityArray(boolean[] linearArray){
+		boolean[][] localityArray = new boolean[3][3];
+		for(int i = 0; i < 3; i++)
+			for(int j = 0; j< 3; j++)
+				localityArray[i][j]=linearArray[i+j];
+		return localityArray;
+	}
 	
 	@Override
 	public void run() {
+		
 		gameReplay = buildRoad(roomWidth/TILE_SIZE/2,roomHeight/TILE_SIZE/2,2000,0);
 	}
 	
+	public boolean isWall(Point p){
+		return roomMap[p.x][p.y]==0;
+	}
+	
 	public boolean didPlayerWin(int keyCode){
-		int dir = keyCode-37;
-		int x = Px + DIRECTION[dir][0];
-		int y = Py + DIRECTION[dir][1];
-		if(inBounds(x,y)&&!paused)
-			if(map[x][y]>0&&map[x][y]<5){
-				Px = x;
-				Py = y;
-				print(Px,Py,character);
-			}
-		gameReplay.add(this.print(Px, Py,character));
-		if(Px==maxX-DIRECTION[maxDir][0]&&Py==maxY-DIRECTION[maxDir][1]){
+		int dir=MID_MID;
+		switch( keyCode ) { 
+        case KeyEvent.VK_UP:
+        	dir = UP_MID;
+            break;
+        case KeyEvent.VK_DOWN:
+        	dir = LOW_MID;
+            break;
+        case KeyEvent.VK_LEFT:
+        	dir = MID_LEFT;
+            break;
+        case KeyEvent.VK_RIGHT :
+        	dir = MID_RIGHT;
+            break;
+        default:
+        	break;
+		}
+		System.out.println(paused);
+		System.out.println(dir);
+		if(!paused)
+			player = moveWalk(player,dir);
+		gameReplay.add(currentFrame = getFrame());
+		if(player.x==maxX-DIRECTION[maxDir][0]&&player.y==maxY-DIRECTION[maxDir][1]){
 			return true;
 		}else 
 			return false;
 			
 		//System.out.println(this.print(x, y,drawer));
 	}
-
+	public Point moveWalk(Point p, int dir){
+		return moveWalk(p,dir,1);
+	}
 	
+	public Point moveWalk(Point p, int dir, int mag){
+		Point point = move(p,dir,mag);
+		if(isWall(point))
+				return p;
+		else
+			return point;
+	}
+	
+	public Point move(Point p, int dir, int mag){
+		Point point = new Point(p);
+		int x = p.x + mag*DIRECTION[dir][0];
+		int y = p.y + mag*DIRECTION[dir][1];
+		if(inBounds(x,y)){
+			point = new Point(x,y);
+		}
+		return point;
+	}
+	
+	public Point move(Point p, int dir){
+		return move(p,dir,1);
+	}
+	
+	public Point move(int x, int y, int dir, int mag){
+		return move(new Point(x,y),dir,mag);
+	}
+	
+	public Point move(int x, int y, int dir){
+		return move(new Point(x,y),dir,1);
+	}
+	
+//	public boolean update(){
+//		//int dir = keyCode-37;
+//		int x = Px;// + DIRECTION[dir][0];
+//		int y = Py;// + DIRECTION[dir][1];
+//		if(inBounds(x,y)&&!paused)
+//			if(roomMap[x][y]>0&&roomMap[x][y]<5){
+//				Px = x;
+//				Py = y;
+//				print(Px,Py,character);
+//			}
+//		//gameReplay.add(this.print(Px, Py,character));
+//		if(Px==maxX-DIRECTION[maxDir][0]&&Py==maxY-DIRECTION[maxDir][1]){
+//			return true;
+//		}else 
+//			return false;
+//			
+//		//System.out.println(this.print(x, y,drawer));
+//	}
+
 	
 	public void clear() {
 

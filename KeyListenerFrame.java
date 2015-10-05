@@ -3,7 +3,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.List;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -20,17 +18,22 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 public class KeyListenerFrame extends JFrame implements KeyListener{
 
 		/**
 		 * 
 		 */
+	
+	//GUI fields
+	private JTextArea typingArea;
+	private JTextArea map;
+	private JTextArea infoPanel;
+	private JPanel console;
+	private JTextArea info;
+	
 		int style = 0;
-		static boolean playReplay = false;
-		static Calendar cal = Calendar.getInstance();
-		Date initDate = cal.getTime();
+		private boolean playReplay = false;
 		static long initialtime = System.currentTimeMillis();
 		static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
 		private static final long serialVersionUID = 1L;
@@ -62,6 +65,11 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 				+ "adjusts replay speed"
 				+ "\n"
 				+ "\n"
+				+ "game [1-100]"
+				+ "\n"
+				+ "adjusts game speed"
+				+ "\n"
+				+ "\n"
 				+ "Hints: "
 				+ "\nTry using the commands "
 				+ "\nwithout parameters!"
@@ -69,19 +77,21 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 				+ "\nTry dimensions that are"
 				+ "\nmultiples of your road"
 				+ "\nlength!";
-		JTextArea typingArea;
-		static int replaySpeed = 20;
+		
 		public static final int DEFAULT_REPLAY_SPEED = 20;
-		int replaySpeedInMilli = 1000/replaySpeed;
-		JTextArea map;
-		static JTextArea info;
+		public static final int DEFAULT_GAME_SPEED = 25;
+		int replaySpeedInMilli = 1000/DEFAULT_REPLAY_SPEED;
+		int gameSpeedInMilli = 1000/DEFAULT_GAME_SPEED;
+		public ArrayList<Integer> keysDown = new ArrayList<Integer>();
+		
+		
+		
 		boolean keyPress = false;
 		int keyDown = 0;
 		static int nextFrame = 0;
 	    final String newline = System.getProperty("line.separator");
 	    Roads game;
-		private JTextArea infoPanel;
-		private JPanel console;
+		
 	    static int buildSpeed = 8;
 	    static int defaultRoadLength= Roads.ROAD_LENGTH;
 	    static KeyListenerFrame frame;
@@ -105,22 +115,15 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	    int currentBackColorIndex = 1;
 	    Timer updateGraphicsTimer;
 	    private ArrayList<Component> componentList;
-		
-	    public static void main(String[] args) throws IOException{
-	    	  //Schedule a job for event dispatch thread:
-	        //creating and showing this application's GUI.
-	        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-	            public void run() {
-	                createAndShowGUI();
-	            }
-	        });
-		}
 	    
 		public KeyListenerFrame() {
 			componentList = new ArrayList<Component>();
 		}
 
 		private static void createAndShowGUI() {
+			//identify thread
+			Thread.currentThread().setName("Graphic Instance");
+			
 			//Create and set up the window.
 			frame = new KeyListenerFrame();
 	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -135,17 +138,24 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        frame.setVisible(true);   
 	        frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	        
-	        (gameInstance = new Thread(frame.game = new Roads(defaultRoadLength))).start();
+	        //create game
+	        (gameInstance = new Thread(frame.game = new Roads())).start();
 	        gameInstance.setName("Game Instance");
 	        
-	        Timer updateGraphicsTimer = new Timer();
-	        updateGraphicsTimer.scheduleAtFixedRate(new TimerTask() {
+	        Timer gameClock = new Timer();
+	        gameClock.scheduleAtFixedRate(new TimerTask() {
 	        	  @Override
 	        	  public void run() {
+	        		//Thread.currentThread().setName("Game Clock");
 	        	    try {
-						updateGraphics();
-						updateInfo();
-		        	    frame.typingArea.requestFocusInWindow();
+	        	    	if(frame.game!=null){
+	        	    		if(frame.keyPress)
+	        	    			frame.game.didPlayerWin(frame.keyDown);
+	        	    		frame.typingArea.requestFocusInWindow();
+	        	    		frame.updateGraphics();
+	        	    		TimeUnit.MILLISECONDS.sleep(frame.gameSpeedInMilli);
+	        	    		updateInfo();
+	        	    	}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -153,14 +163,14 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        	}, 1, 1);
 		}
 		
-		protected static void updateGraphics() throws InterruptedException {
+		protected void updateGraphics() throws InterruptedException {
 			if(!playReplay)
-				frame.map.setText(frame.game.print(frame.game.Px,frame.game.Py,Roads.character));
+				frame.map.setText(game.getFrame());
 			else{
-				if(nextFrame<frame.game.gameReplay.size()){
-					if(nextFrame>frame.game.keyFrame)
-						TimeUnit.MILLISECONDS.sleep(frame.replaySpeedInMilli);
-					frame.map.setText(frame.game.gameReplay.get(nextFrame));
+				if(nextFrame<game.gameReplay.size()){
+					if(nextFrame>game.keyFrame)
+						TimeUnit.MILLISECONDS.sleep(replaySpeedInMilli);
+					frame.map.setText(game.gameReplay.get(nextFrame));
 					nextFrame++;
 				}
 				else{
@@ -171,8 +181,9 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		}
 
 		protected static void updateInfo() {
+			//get date and offset by 7500
 			Date date = new Date(System.currentTimeMillis()-initialtime-7500*60*60);
-			info.setText("Time: " + sdf.format(date) + INFO);
+			frame.info.setText("Time: " + sdf.format(date) + INFO);
 		}
 
 		private void addComponentsToPane() {
@@ -207,139 +218,141 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		@Override
 		public void keyPressed(KeyEvent e) {
 			int keyCode = e.getKeyCode();
-			boolean update = true;
-			if(keyPress)
-				return;
+			//if(keyPress)
+			//	return;
 			keyDown = keyCode;
+			//keysDown.add(keyCode);
 			keyPress=true;
 		    switch( keyCode ) { 
 		        case KeyEvent.VK_UP:
-		        	//infoPanel.setText("UP PRESSED");
 		            break;
 		        case KeyEvent.VK_DOWN:
-		        	//infoPanel.setText("DOWN PRESSED");
 		            break;
 		        case KeyEvent.VK_LEFT:
-		        	//infoPanel.setText("LEFT PRESSED");
 		            break;
 		        case KeyEvent.VK_RIGHT :
-		        	//infoPanel.setText("RIGHT PRESSED");
 		            break;
 		        case KeyEvent.VK_ENTER :
 		        	StringTokenizer command = new StringTokenizer(typingArea.getText());
 		        	typingArea.setText(null);
 		        	switch(command.nextToken()){
-		        		case "replay":
-		        			infoPanel.setText("CHANGING REPLAY SPEED");
-		        			int speed = DEFAULT_REPLAY_SPEED;
-		        			if(command.hasMoreTokens())
-		        				speed = Integer.parseInt(command.nextToken()); 
-		        			if(speed>0&&speed<=100)
-		        				replaySpeedInMilli=1000/speed;
-		        			else
-		        				replaySpeedInMilli=1000/DEFAULT_REPLAY_SPEED;
-		        			typingArea.setText(null);
-		        			break;
-		        		case "new":
-		        			infoPanel.setText("GENERATING NEW MAP");
-		        			int roadLength = Roads.ROAD_LENGTH;
-		        			int width = Roads.ROOM_HEIGHT;
-		        			int height = Roads.ROOM_WIDTH;
-		        			if(command.hasMoreTokens())
-		        				roadLength = Integer.parseInt(command.nextToken()); 
-		        			if(command.hasMoreTokens())
-		        				width = Integer.parseInt(command.nextToken()); 
-		        			if(command.hasMoreTokens())	
-		        				height = Integer.parseInt(command.nextToken());
-		        			
-		        			if(roadLength<1)
-		        				roadLength=1;
-		        			if(width<1)
-		        				width=1;
-		        			if(height<1)
-		        				height=1;
-		        			
-		        			frame.game.clear();
-		        			(gameInstance = new Thread(frame.game = new Roads(roadLength,width,height))).start();
-		        			break;
-		        		case "style":
-		        			infoPanel.setText("CHANGING STYLE");
-		        			if(command.hasMoreTokens())
-		        				style = Integer.parseInt(command.nextToken()); 
-		        			else
-		        				style=(style+1)%Roads.styles.length;
-		        			Roads.sprites=Roads.styles[style];
-		        			typingArea.setText("");
-		        			break;
-		        		case "color":
-		        			infoPanel.setText("CHANGING FOREGROUND COLOR");
-	        					Color changeForeColor = colorArray[currentForeColorIndex];
-			        			if(command.hasMoreTokens()){
-			        				int input = Integer.parseInt(command.nextToken())%colorArray.length;
-			        				if(input>=0)
-			        					currentForeColorIndex=input;
-			        			}else{
-			        				currentForeColorIndex = (currentForeColorIndex+1) % colorArray.length;
-			        			}
-			        			
-			        			while(currentForeColorIndex==currentBackColorIndex)
-			        				currentForeColorIndex=(currentForeColorIndex+1)%colorArray.length;
-			        			
-			        			changeForeColor = colorArray[currentForeColorIndex];
-			        			
-			        			map.setForeground(changeForeColor);
-			        			infoPanel.setForeground(changeForeColor);
-			        			typingArea.setForeground(changeForeColor);
-			        			info.setForeground(changeForeColor);
-		        			typingArea.setText("");
-		        			break;
-		        		case "colorbg":
-		        			infoPanel.setText("CHANGING BACKROUND COLOR");
-		        			Color changeBackColor = colorArray[currentBackColorIndex];
-		        			if(command.hasMoreTokens()){
-		        				int input = Integer.parseInt(command.nextToken())%colorArray.length;
-		        				if(input>=0)
-		        					currentBackColorIndex=input;
-		        			}else{
-		        				currentBackColorIndex = (currentBackColorIndex+1) % colorArray.length;
-		        			}
-		        			
-		        			while(currentForeColorIndex==currentBackColorIndex)
-		        				currentBackColorIndex=(currentBackColorIndex+1)%colorArray.length;
-		        			
-		        			changeBackColor = colorArray[currentBackColorIndex];
-		        			
-		        			map.setBackground(changeBackColor);
-		        			infoPanel.setBackground(changeBackColor);
-		        			typingArea.setBackground(changeBackColor);
-		        			info.setBackground(changeBackColor);
-		        			break;
-		        		default:
+		        	case "speed":{
+		        		infoPanel.setText("CHANGING GAME SPEED");
+	        			int speed = DEFAULT_GAME_SPEED;
+	        			if(command.hasMoreTokens())
+	        				speed = Integer.parseInt(command.nextToken()); 
+	        			if(speed>0&&speed<=100)
+	        				gameSpeedInMilli=1000/speed;
+	        			else
+	        				replaySpeedInMilli=1000/DEFAULT_REPLAY_SPEED;
+	        			typingArea.setText(null);
+	        			break;
+		        	}
+		        	case "replay":{
+		        		infoPanel.setText("CHANGING REPLAY SPEED");
+	        			int speed = DEFAULT_REPLAY_SPEED;
+	        			if(command.hasMoreTokens())
+	        				speed = Integer.parseInt(command.nextToken()); 
+	        			if(speed>0&&speed<=100)
+	        				replaySpeedInMilli=1000/speed;
+	        			else
+	        				replaySpeedInMilli=1000/DEFAULT_REPLAY_SPEED;
+	        			typingArea.setText(null);
+	        			break;
+		        	}
+		        	case "new":{
+		        		infoPanel.setText("GENERATING NEW MAP");
+	        			int roadLength = Roads.ROAD_LENGTH;
+	        			int width = Roads.ROOM_HEIGHT;
+	        			int height = Roads.ROOM_WIDTH;
+	        			if(command.hasMoreTokens())
+	        				roadLength = Integer.parseInt(command.nextToken()); 
+	        			if(command.hasMoreTokens())
+	        				width = Integer.parseInt(command.nextToken()); 
+	        			if(command.hasMoreTokens())	
+	        				height = Integer.parseInt(command.nextToken());
+	        			
+	        			if(roadLength<1)
+	        				roadLength=1;
+	        			if(width<1)
+	        				width=1;
+	        			if(height<1)
+	        				height=1;
+	        			
+	        			frame.game.clear();
+	        			(gameInstance = new Thread(frame.game = new Roads(roadLength,width,height))).start();
+	        			break;
+		        	}
+		        	case "style":{
+		        		infoPanel.setText("CHANGING STYLE");
+	        			if(command.hasMoreTokens())
+	        				style = Integer.parseInt(command.nextToken()); 
+	        			else
+	        				style=(style+1)%Roads.styles.length;
+	        			Roads.sprites=Roads.styles[style];
+	        			typingArea.setText("");
+	        			break;
+		        	}
+		        	case "color":{
+		        		infoPanel.setText("CHANGING FOREGROUND COLOR");
+    					Color changeForeColor = colorArray[currentForeColorIndex];
+	        			if(command.hasMoreTokens()){
+	        				int input = Integer.parseInt(command.nextToken())%colorArray.length;
+	        				if(input>=0)
+	        					currentForeColorIndex=input;
+	        			}else{
+	        				currentForeColorIndex = (currentForeColorIndex+1) % colorArray.length;
+	        			}
+	        			
+	        			while(currentForeColorIndex==currentBackColorIndex)
+	        				currentForeColorIndex=(currentForeColorIndex+1)%colorArray.length;
+	        			
+	        			changeForeColor = colorArray[currentForeColorIndex];
+	        			
+	        			map.setForeground(changeForeColor);
+	        			infoPanel.setForeground(changeForeColor);
+	        			typingArea.setForeground(changeForeColor);
+	        			info.setForeground(changeForeColor);
+	        			typingArea.setText("");
+	        			break;
+		        	}
+		        	case "colorbg":{
+		        		infoPanel.setText("CHANGING BACKROUND COLOR");
+	        			Color changeBackColor = colorArray[currentBackColorIndex];
+	        			if(command.hasMoreTokens()){
+	        				int input = Integer.parseInt(command.nextToken())%colorArray.length;
+	        				if(input>=0)
+	        					currentBackColorIndex=input;
+	        			}else{
+	        				currentBackColorIndex = (currentBackColorIndex+1) % colorArray.length;
+	        			}
+	        			
+	        			while(currentForeColorIndex==currentBackColorIndex)
+	        				currentBackColorIndex=(currentBackColorIndex+1)%colorArray.length;
+	        			
+	        			changeBackColor = colorArray[currentBackColorIndex];
+	        			
+	        			map.setBackground(changeBackColor);
+	        			infoPanel.setBackground(changeBackColor);
+	        			typingArea.setBackground(changeBackColor);
+	        			info.setBackground(changeBackColor);
+	        			break;
+		        	}
+		        	default:{
 		        			infoPanel.setText("COMMAND INVALID");
 		        			break;
 		        	}
-		        	update = false;
-		        	break;
-		        case KeyEvent.VK_BACK_SPACE:
-//		        	String str = typingArea.getText();
-//		        	if(str.length()>3)
-//		        		typingArea.setText(str.substring(0, str.length()-1));
-//		        	update =false;
+		        	}
+				break;
 		        default:
-		        	update = false;
 		     }
-		    if(update){
-		    	//System.out.println(game.didPlayerWin(keyCode));
-		    	if(game.didPlayerWin(keyCode)){
-		    		frame.game.clear();
-        			//(gameInstance = new Thread(frame.game = new Roads(game.roadLength,game.roomWidth,game.roomHeight))).start();
-        			infoPanel.setText("CONGRATULATIONS, YOU WON!");
-        			playReplay=true;
-		    	}
-		    }
-		    String result = game.print(Roads.Px, Roads.Py,"o'");
-	        //result.replaceAll(newline, "<br/>");
-		    //map.setText(result);
+//		    if(update){
+//		    	if(game.didPlayerWin(keyCode)){
+//		    		frame.game.clear();
+//        			infoPanel.setText("CONGRATULATIONS, YOU WON!");
+//        			playReplay=true;
+//		    	}
+//		    }
 		}
 
 		@Override
@@ -350,20 +363,6 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 			else if(keyCode!=keyDown)
 				return;
 			keyPress=false;
-		    switch( keyCode ) { 
-		        case KeyEvent.VK_UP:
-		        	//infoPanel.setText("UP RELEASED");
-		            break;
-		        case KeyEvent.VK_DOWN:
-		        	//infoPanel.setText("DOWN RELEASED");
-		            break;
-		        case KeyEvent.VK_LEFT:
-		        	//infoPanel.setText("LEFT RELEASED");
-		            break;
-		        case KeyEvent.VK_RIGHT :
-		        	//infoPanel.setText("RIGHT RELEASED");
-		            break;
-		     }
 		}
 
 		@Override
@@ -384,5 +383,17 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		    }
 		    return compList;
 		}
+		public static void main(String[] args) throws IOException{
+			//Schedule a job for event dispatch thread:
+	        //creating and showing this application's GUI.
+	        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+	            public void run() {
+	                createAndShowGUI();
+	            }
+	        });
+	        
+	        
+		}
 		
-	}
+
+}

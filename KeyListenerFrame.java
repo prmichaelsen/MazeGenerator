@@ -114,6 +114,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	    		Color.ORANGE,
 	    		Color.MAGENTA,
 	    };
+	    
 	    int currentForeColorIndex = 0;
 	    int currentBackColorIndex = 1;
 	    Timer updateGraphicsTimer;
@@ -143,26 +144,6 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 
 		private static void createAndShowGUI() {
 			
-			Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
-			ArrayList<String> monospacedFonts = new ArrayList<String>();
-			
-			for(int i = 0; i < allFonts.length;i++){
-				for(int j = 0; j < fonts.length;j++){
-					Font f = Font.decode(fonts[j]);
-					String fam = f.getFamily();
-					System.out.println(fam);
-					if(allFonts[i].getFamily().equals(fam)
-							&& !allFonts[i].getFamily().equals(Font.DIALOG)
-							&& !allFonts[i].getName().equals("Lucida Sans Typewriter Bold Oblique")
-							&& !allFonts[i].getName().equals("Lucida Sans Typewriter Oblique"))
-						monospacedFonts.add(allFonts[i].getFontName());
-				}
-			}
-			
-			System.out.println(monospacedFonts);
-			
-			fonts = monospacedFonts.toArray(fonts);
-			
 			//identify thread
 			Thread.currentThread().setName("Graphic Instance");
 			
@@ -172,6 +153,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	         
 	        //Set up the content pane.
 	        frame.addComponentsToPane();
+	        frame.loadFonts();
 	         
 	        //Display the window.
 	        frame.pack();
@@ -223,6 +205,27 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        	}, 1000/10, 1000/10); //10 cps
 			}
 		
+		private void loadFonts() {
+			
+			Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+			ArrayList<String> monospacedFonts = new ArrayList<String>();
+			
+			for(int i = 0; i < allFonts.length;i++){
+				for(int j = 0; j < fonts.length;j++){
+					Font f = Font.decode(fonts[j]);
+					String fam = f.getFamily();
+					if(allFonts[i].getFamily().equals(fam)
+							&& !allFonts[i].getFamily().equals(Font.DIALOG)
+							&& !allFonts[i].getName().equals("Lucida Sans Typewriter Bold Oblique")
+							&& !allFonts[i].getName().equals("Lucida Sans Typewriter Oblique"))
+						monospacedFonts.add(allFonts[i].getFontName());
+				}
+			}
+			
+			fonts = monospacedFonts.toArray(fonts);
+			
+		}
+
 		protected void updateGraphics() throws InterruptedException {
 			if(!playReplay){
 				frame.map.setText(game.getFrame());
@@ -303,13 +306,17 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		        	typingArea.setText(null);
 		        	switch(command.nextToken()){
 		        	case "font":{
+		        		
+		        		if(command.hasMoreTokens())
+	        				fontIndex = Math.abs(Integer.parseInt(command.nextToken())) - 1; 
+		        		
 		        		String font = fonts[(++fontIndex)%fonts.length];
 		        		for(Component component:componentList){
 		    		        component.setFont(new Font(font, Font.PLAIN, 18));
 		    	        }
 		        		
 		        		//System.out.println(frame.getFont());
-		        		infoPanel.setText("CHANGED FONT TO " + font + " " + fontIndex%fonts.length + "/" + fonts.length);
+		        		infoPanel.setText("CHANGED FONT TO " + font + " " + fontIndex%fonts.length + "/" + (fonts.length-1));
 		        		typingArea.setText(null);
 		        		break;
 		        	}
@@ -320,7 +327,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		    	        }
 		        		
 		        		//System.out.println(frame.getFont());
-		        		infoPanel.setText("CHANGED FONT TO " + font + " " + fontIndex%fonts.length + "/" + fonts.length);
+		        		infoPanel.setText("CHANGED FONT TO " + font + " " + fontIndex%fonts.length + "/" + (fonts.length-1));
 		        		typingArea.setText(null);
 		        		break;
 		        	}
@@ -402,7 +409,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        			break;
 		        	}
 		        	case "color":{
-		        		infoPanel.setText("CHANGING FOREGROUND COLOR");
+
 		        		typingArea.setText("");
     					Color changeForeColor = colorArray[currentForeColorIndex];
 	        			if(command.hasMoreTokens()){
@@ -421,7 +428,9 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        			for(Component component:componentList){
 	        		        component.setForeground(changeForeColor);
 	        	        }
-
+	        			
+	        			infoPanel.setText("CHANGED FOREGROUND TO " + DefaultColor.values()[currentForeColorIndex]
+	        					+ " " + currentForeColorIndex%colorArray.length + "/" + (colorArray.length-1));
 	        			typingArea.setText("");
 	        			break;
 		        	}
@@ -445,6 +454,8 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        		        component.setBackground(changeBackColor);
 	        	        }
 	        			
+	        			infoPanel.setText("CHANGED BACKGROUND TO " +  DefaultColor.values()[currentBackColorIndex]
+	        					+ " " + currentBackColorIndex%colorArray.length + "/" + (colorArray.length-1));
 	        			typingArea.setText("");
 	        			break;
 		        	}

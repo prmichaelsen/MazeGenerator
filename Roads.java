@@ -538,6 +538,87 @@ public class Roads implements Runnable{
 			wallSprites[432]="┘ ";
 			wallSprites[216]="└ ";
 			
+			//WALL ROCK
+			wallSprites[177]  =
+			wallSprites[347]  =
+			wallSprites[23]  =
+			wallSprites[252] =
+			wallSprites[90] =
+			wallSprites[182]  =
+			wallSprites[221]=
+			wallSprites[48] =
+			wallSprites[316] =
+			wallSprites[183] =
+			wallSprites[22] =
+			wallSprites[25] =
+			wallSprites[59] =
+			wallSprites[89] =
+			wallSprites[217] =
+			wallSprites[496] =
+			wallSprites[95] =
+			wallSprites[500] =
+			wallSprites[31] =
+			wallSprites[473] =
+			wallSprites[311] =
+			wallSprites[472] =
+			wallSprites[444] =
+			wallSprites[304] =
+			wallSprites[112] =
+			wallSprites[24] =
+			wallSprites[275] =
+			wallSprites[151] =
+			wallSprites[436] =
+			wallSprites[310] =
+			wallSprites[55]  =
+			wallSprites[248]  =
+			wallSprites[440]  =			
+			wallSprites[62]  =			
+			wallSprites[318]  =
+			wallSprites[159]  =
+			wallSprites[441]  =
+			wallSprites[306]  =
+			wallSprites[148] =
+			wallSprites[240] =
+			wallSprites[222] =	
+			wallSprites[91]  = "# ";
+			
+			//ROCK BRIDGE
+			//DIAGONAL
+			wallSprites[17] =
+			wallSprites[274] =
+			wallSprites[153] =
+			wallSprites[273]  =
+			//STRAIGHT
+			wallSprites[402]  =
+			wallSprites[313]  =
+			wallSprites[120]  = "# ";
+			
+			//ROCK BRIDGE CAP
+			//NORTH
+			wallSprites[22]  =
+			wallSprites[18]  =
+			//EAST
+			wallSprites[48] =
+			wallSprites[52]  =
+			//SOUTH
+			wallSprites[400] =
+			wallSprites[464] =
+			wallSprites[144]  =
+			wallSprites[208] =
+			//WEST
+					wallSprites[28] =
+			wallSprites[88]  =
+			//UNKNOWN
+			wallSprites[19]  =
+			wallSprites[24]  = "# ";
+			
+			
+			//ISOLATED ROCK
+			wallSprites[80] =
+					wallSprites[272] =
+			wallSprites[16]  = "# ";
+			
+			
 			//ROADBLOCK
 			wallSprites[477] =
 			wallSprites[351] =

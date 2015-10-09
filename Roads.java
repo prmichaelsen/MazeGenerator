@@ -83,6 +83,7 @@ public class Roads implements Runnable{
 	public boolean building = true;
 	public boolean useSprites = true;
 	public boolean lookAtPaths = true;
+	boolean lookAtWalls;
 
 	public ArrayList<String> buildRoad(int x, int y){
 		
@@ -452,7 +453,7 @@ public class Roads implements Runnable{
 		for(int i = 0; i < wallSprites.length; i++){
 			
 			if(useSprites){
-				wallSprites[i] = "╱";
+				wallSprites[i] = "  ";
 				pathSprites[i] = "  ";
 			}else{
 				if(lookAtPaths){
@@ -476,7 +477,7 @@ public class Roads implements Runnable{
 		if(useSprites){
 			
 		//PATHS
-			if(false){
+			if(lookAtPaths){
 			//horizontal path
 			pathSprites[231] =
 			pathSprites[399] =
@@ -493,7 +494,7 @@ public class Roads implements Runnable{
 			pathSprites[462] =
 			pathSprites[483] =
 			pathSprites[487] =
-			pathSprites[463] = "═ ";
+			pathSprites[463] = "══";
 			
 			//vertical path
 			pathSprites[429] =
@@ -514,20 +515,20 @@ public class Roads implements Runnable{
 			
 			//path intersections
 			pathSprites[333] = "╣ ";
-			pathSprites[453] = "╦ ";
-			pathSprites[357] = "╠ ";
-			pathSprites[327] = "╩ ";	
-			pathSprites[325] = "╬ ";
+			pathSprites[453] = "╦═";
+			pathSprites[357] = "╠═";
+			pathSprites[327] = "╩═";	
+			pathSprites[325] = "╬═";
 			
 			//path corners ╚ ╔ ╗ ╝
-			pathSprites[485] = "╔ ";
+			pathSprites[485] = "╔═";
 			pathSprites[461] = "╗ ";
-			pathSprites[359] = "╚ ";
+			pathSprites[359] = "╚═";
 			pathSprites[335] = "╝ ";
 			}
 			
 		//WALLS
-			if(true){
+			if(lookAtWalls){
 			//surrounded wall
 			wallSprites[511]="┼ ";
 			

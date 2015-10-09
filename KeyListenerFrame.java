@@ -143,6 +143,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		} ;
 		private int fontIndex = 0;
 		private String lastCommand;
+		private boolean toggle = true;
 	    
 		public KeyListenerFrame() {
 			componentList = new ArrayList<Component>();
@@ -369,7 +370,14 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		        		break;
 		        	}
 		        	case "p":{
-		        		frame.game.lookAtPaths=!frame.game.lookAtPaths;
+		        		if(toggle){
+		        			frame.game.lookAtPaths= !frame.game.lookAtPaths;
+		        		}else{
+		        			frame.game.lookAtWalls= !frame.game.lookAtWalls;
+		        		}
+		        		
+		        		toggle=!toggle;
+		        		
 		        		frame.game.assignShit();
 		        		typingArea.setText(null);
 		        		break;

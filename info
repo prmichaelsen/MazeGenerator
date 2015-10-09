@@ -1,0 +1,41 @@
+Commands: 
+
+new r t w h
+creates a new maze
+r - road length (default 3)
+t - road thickness (default 1)
+w - maze width (default 48)
+h - maze height (default 48)
+
+style n
+changes style
+
+color/colorbg n
+changes foreground/background color
+
+font n
+changes font
+
+fontb
+previous font
+
+pause
+pauses the game
+
+replay n
+adjusts replay speed
+
+t
+toggle tile numbers
+
+p
+toggle path/wall numbers
+
+Hints & Tips: 
+Try using the commands without 
+parameters!
+Try style 3!
+Try dimensions that are multiples
+of your road length!
+Hit enter to repeat the last
+command!

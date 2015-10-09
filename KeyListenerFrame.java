@@ -6,7 +6,13 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,48 +44,50 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		static long initialtime = System.currentTimeMillis();
 		static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
 		private static final long serialVersionUID = 1L;
-		private static final String INFO = 
-				"\n"
-				+ "Commands: "
-				+ "\n"
-				+ "\n"
-				+ "new [1-r] [1-t] [1-w] [1-h]"
-				+ "\n"
-				+ "creates a new maze"
-				+ "\nr - road length (default 3)"
-				+ "\nt - road thickness (default 1)" 
-				+ "\nw - maze width (default 48)"
-				+ "\nh - maze height (default 48)"
-				+ "\n"
-				+ "\n"
-				+ "style [0-"+(Roads.styles.length-1)+"]"
-				+ "\n"
-				+ "changes style"
-				+ "\n"
-				+ "\n"
-				+ "color [0-11] and colorbg [0-11]"
-				+ "\n"
-				+ "changes color"
-				+ "\n"
-				+ "\n"
-				+ "replay [s]"
-				+ "\n"
-				+ "adjusts replay speed"
-				+ "\n"
-				+ "\n"
-				+ "game [1-100]"
-				+ "\n"
-				+ "adjusts game speed"
-				+ "\n"
-				+ "\n"
-				+ "Hints: "
-				+ "\nTry using the commands "
-				+ "\nwithout parameters!"
-				+ "\nTry style 3!"
-				+ "\nTry dimensions that are"
-				+ "\nmultiples of your road"
-				+ "\nlength!";
-		
+		private static String appInfo = "";
+//				"\n"
+//				+ "Commands: "
+//				+ "\n"
+//				+ "\n"
+//				+ "new [1-r] [1-t] [1-w] [1-h]"
+//				+ "\n"
+//				+ "creates a new maze"
+//				+ "\nr - road length (default 3)"
+//				+ "\nt - road thickness (default 1)" 
+//				+ "\nw - maze width (default 48)"
+//				+ "\nh - maze height (default 48)"
+//				+ "\n"
+//				+ "\n"
+//				+ "style [0-"+(Roads.styles.length-1)+"]"
+//				+ "\n"
+//				+ "changes style"
+//				+ "\n"
+//				+ "\n"
+//				+ "color [0-11] and colorbg [0-11]"
+//				+ "\n"
+//				+ "changes color"
+//				+ "\n"
+//				+ "\n"
+//				+ "replay [s]"
+//				+ "\n"
+//				+ "adjusts replay speed"
+//				+ "\n"
+//				+ "\n"
+//				+ "game [1-100]"
+//				+ "\n"
+//				+ "adjusts game speed"
+//				+ "\n"
+//				+ "\n"
+//				+ "Hints: "
+//				+ "\nTry using the commands "
+//				+ "\nwithout parameters!"
+//				+ "\nTry style 3!"
+//				+ "\nTry dimensions that are"
+//				+ "\nmultiples of your road"
+//				+ "\nlength!"
+//				+ "\nHit enter to repeate"
+//				+ "\nthe last command!";
+//		
 		public static final int DEFAULT_REPLAY_SPEED = 100;
 		public static final int DEFAULT_GAME_SPEED = 25;
 		int replaySpeed = DEFAULT_REPLAY_SPEED;
@@ -100,6 +108,8 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	    static KeyListenerFrame frame;
 	    static Timer showBuild;
 	    static Thread gameInstance;
+	    
+	    //an array of color constants
 	    static Color[] colorArray = {
 	    		Color.GREEN,
 	    		Color.BLACK,
@@ -119,21 +129,17 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	    int currentBackColorIndex = 1;
 	    Timer updateGraphicsTimer;
 	    private ArrayList<Component> componentList;
+	    
+	    //font families to collect the fonts of
 		private static String[] fonts = {
 				"consolas",
-//				"courier",
 				"courier new",
-//				"dejavu sans mono",
 				"lucida console",
 				"lettergothicstd",
 				"lucida sans typewriter",
 				"oratorstd",
 				"ocrastd",
 				"prestigeelitestd"
-//				"monaco",
-//				"lucida sans unicode",
-//				"fixedsys excelsior",
-//				"everson mono",
 		} ;
 		private int fontIndex = 0;
 		private String lastCommand;
@@ -142,7 +148,9 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 			componentList = new ArrayList<Component>();
 		}
 
-		private static void createAndShowGUI() {
+		private static void createAndShowGUI(){
+			
+			System.out.println(appInfo);
 			
 			//identify thread
 			Thread.currentThread().setName("Graphic Instance");
@@ -154,6 +162,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        //Set up the content pane.
 	        frame.addComponentsToPane();
 	        frame.loadFonts();
+	        frame.loadInfo();
 	         
 	        //Display the window.
 	        frame.pack();
@@ -205,6 +214,23 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        	}, 1000/10, 1000/10); //10 cps
 			}
 		
+		private void loadInfo() {
+			
+			try {
+				InputStream resourceAsStream = KeyListenerFrame.class.getResourceAsStream("info");
+				BufferedReader br = new BufferedReader(new InputStreamReader(resourceAsStream));
+
+				String line;
+			
+				while((line = br.readLine()) != null) {
+					appInfo += "\n" + line + "   ";
+				}
+				resourceAsStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+		}
+
 		private void loadFonts() {
 			
 			Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
@@ -246,7 +272,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		protected static void updateInfo() {
 			//get date and offset by 7500
 			Date date = new Date(System.currentTimeMillis()-initialtime-7500*60*60);
-			frame.info.setText("Time: " + sdf.format(date) + INFO);
+			frame.info.setText("Time: " + sdf.format(date) + appInfo);
 		}
 
 		private void addComponentsToPane() {
@@ -472,16 +498,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 		@Override
 		public void keyReleased(KeyEvent e) {
 			int keyCode = e.getKeyCode();
-//			asynch stop
-//			keyPress = false;
 			keysDown.remove(new Integer(keyCode));
-//			if(keysDown.isEmpty())
-//				frame.game.didPlayerWin(0);
-//			if(!keyPress)
-//				return;
-//			else if(keyCode!=keyDown)
-//				return;
-//			keyPress=false;
 		}
 
 		@Override
@@ -507,7 +524,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	        //creating and showing this application's GUI.
 	        javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	            public void run() {
-	                createAndShowGUI();
+	            	createAndShowGUI();	
 	            }
 	        });
 	        

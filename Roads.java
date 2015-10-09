@@ -88,6 +88,26 @@ public class Roads implements Runnable{
 		
 		assignShit();
 		
+//		for(int i=0; i < roomMap.length; i++){
+//			//generate right wall
+//			roomMap[i][0] = 1;
+//			
+//			//generate left wall
+//			roomMap[i][roomMap[0].length-1] = 1;
+//		}
+//		
+//		for(int i=0; i < roomMap[0].length; i++){
+//			
+//			//generate top wall
+//			roomMap[0][i] = 1;
+//			
+//			//generate bottom wall
+//			roomMap[roomMap.length-1][i] = 1;
+//		}
+		
+		
+		
+		
 		ArrayList<String> buildProcess = new ArrayList<String>();
 		int dir = 0;
 		boolean run = true;
@@ -141,6 +161,24 @@ public class Roads implements Runnable{
 			}
 			run = can;
 		}
+		
+//		for(int i=0; i < roomMap.length; i++){
+//			//generate right wall
+//			roomMap[i][0] = 0;
+//			
+//			//generate left wall
+//			roomMap[i][roomMap[0].length-1] = 0;
+//		}
+//		
+//		for(int i=0; i < roomMap[0].length; i++){
+//			
+//			//generate top wall
+//			roomMap[0][i] = 0;
+//			
+//			//generate bottom wall
+//			roomMap[roomMap.length-1][i] = 0;
+//		}
+		
 		paused = false;
 		return buildProcess;
 	}
@@ -177,7 +215,7 @@ public class Roads implements Runnable{
 	
 	public void build(){
 		paused = true;
-		gameReplay = buildRoad(roomWidth/TILE_SIZE/2,roomHeight/TILE_SIZE/2);
+		gameReplay = buildRoad(roomWidth/TILE_SIZE/2 ,roomHeight/TILE_SIZE/2 );
 		keyFrame = gameReplay.size();
 	}
 	
@@ -188,14 +226,14 @@ public class Roads implements Runnable{
 		this.roomWidth = ROOM_WIDTH;
 		this.roomHeight = ROOM_HEIGHT;
 		
-		this.roadLength=4;
+		this.roadLength=3;
 		this.roadWidth=1;
 		
-		this.roomWidth = 50*TILE_SIZE;
-		this.roomHeight = 25*TILE_SIZE;
+		this.roomWidth = 48*TILE_SIZE;
+		this.roomHeight = 48*TILE_SIZE;
 		
-		player = new Point(this.roomWidth/TILE_SIZE/2,this.roomHeight/TILE_SIZE/2);
-		roomMap = new int[this.roomWidth/TILE_SIZE][this.roomHeight/TILE_SIZE];
+		player = new Point(this.roomWidth/TILE_SIZE/2 ,this.roomHeight/TILE_SIZE/2 );
+		roomMap = new int[this.roomWidth/TILE_SIZE ][this.roomHeight/TILE_SIZE ];
 		path = new Stack<Integer>();
 		gameReplay = new ArrayList<String>();
 		
@@ -209,8 +247,8 @@ public class Roads implements Runnable{
 		this.roomWidth = roomWidth*TILE_SIZE;
 		this.roomHeight = roomHeight*TILE_SIZE;
 		
-		player = new Point(this.roomWidth/TILE_SIZE/2,this.roomHeight/TILE_SIZE/2);
-		roomMap = new int[this.roomWidth/TILE_SIZE][this.roomHeight/TILE_SIZE];
+		player = new Point(this.roomWidth/TILE_SIZE/2 + 1,this.roomHeight/TILE_SIZE/2 + 1);
+		roomMap = new int[this.roomWidth/TILE_SIZE + 2][this.roomHeight/TILE_SIZE + 2];
 		path = new Stack<Integer>();
 		gameReplay = new ArrayList<String>();
 		
@@ -225,8 +263,8 @@ public class Roads implements Runnable{
 		this.roomWidth = roomWidth*TILE_SIZE;
 		this.roomHeight = roomHeight*TILE_SIZE;
 		
-		player = new Point(this.roomWidth/TILE_SIZE/2,this.roomHeight/TILE_SIZE/2);
-		roomMap = new int[this.roomWidth/TILE_SIZE][this.roomHeight/TILE_SIZE];
+		player = new Point(this.roomWidth/TILE_SIZE/2 ,this.roomHeight/TILE_SIZE/2 );
+		roomMap = new int[this.roomWidth/TILE_SIZE][this.roomHeight/TILE_SIZE ];
 		path = new Stack<Integer>();
 		gameReplay = new ArrayList<String>();
 		
@@ -248,11 +286,12 @@ public class Roads implements Runnable{
 	static boolean printOnce = false;
 	
 	public String getFrame(){
-		String result ="X ";
-		
-		for(int i=0;i<roomHeight/TILE_SIZE + 1;i++)
-			result+="X ";
-		result+=newline+"X ";
+//		String result ="X ";
+//		
+//		for(int i=0;i<roomHeight/TILE_SIZE + 1;i++)
+//			result+="X ";
+//		result+=newline+"X ";
+		String result="";
 		for(int i=0;i<roomWidth/TILE_SIZE;i++){
 			for(int j=0;j<roomHeight/TILE_SIZE;j++){
 				//find out what type of block this is
@@ -285,19 +324,21 @@ public class Roads implements Runnable{
 					result+=goal;
 				else
 					result+=gameSprites[spriteType][spriteIndex];
-					//result+=(roomMap[i][j] > 0)? "  " : "X ";
+					//result+=roomMap[i][j];
+					//result+=(roomMap[i][j] > 0)? " " : "X";
 					//result+=(roomMap[i][j] > 0)? roomMap[i][j]-1 + " ": "  ";
 					//result+=(roomMap[i][j] > 10)? roomMap[i][j]-1 : ((roomMap[i][j]>0)? roomMap[i][j]-1+" ":"  ");
 				
 			}
-			result+="X" + newline+"X ";
+//			result+="X" + newline+"X ";
+			result+= newline;
 		}
-		for(int i=0;i<roomHeight/TILE_SIZE +  1;i++)
-			result+="X ";
-		result+=newline;
+//		for(int i=0;i<roomHeight/TILE_SIZE +  1;i++)
+//			result+="X ";
+//		result+=newline;
 		//System.out.println(result);
 		gameReplay.add(result);
-		return result;
+		return result + newline;
 	}
 	
 	private boolean isWall(int x, int y) {
@@ -412,7 +453,7 @@ public class Roads implements Runnable{
 			
 			if(useSprites){
 				wallSprites[i] = "╱";
-				pathSprites[i] = " ";
+				pathSprites[i] = "  ";
 			}else{
 				if(lookAtPaths){
 					wallSprites[i] = "    ";
@@ -425,8 +466,8 @@ public class Roads implements Runnable{
 		}
 		
 		if(useSprites){
-			character = "╳";
-			goal = "╳";
+			character = "o'";
+			goal = "@ ";
 		}else{
 			character = " o' ";
 			goal = " @  ";
@@ -452,7 +493,7 @@ public class Roads implements Runnable{
 			pathSprites[462] =
 			pathSprites[483] =
 			pathSprites[487] =
-			pathSprites[463] = "═";
+			pathSprites[463] = "═ ";
 			
 			//vertical path
 			pathSprites[429] =
@@ -469,32 +510,32 @@ public class Roads implements Runnable{
 			pathSprites[364] =
 			pathSprites[365] =
 			pathSprites[366] = 
-			pathSprites[367] = "║";
+			pathSprites[367] = "║ ";
 			
 			//path intersections
-			pathSprites[333] = "╣";
-			pathSprites[453] = "╦";
-			pathSprites[357] = "╠";
-			pathSprites[327] = "╩";	
-			pathSprites[325] = "╬";
+			pathSprites[333] = "╣ ";
+			pathSprites[453] = "╦ ";
+			pathSprites[357] = "╠ ";
+			pathSprites[327] = "╩ ";	
+			pathSprites[325] = "╬ ";
 			
 			//path corners ╚ ╔ ╗ ╝
-			pathSprites[485] = "╔";
-			pathSprites[461] = "╗";
-			pathSprites[359] = "╚";
-			pathSprites[335] = "╝";
+			pathSprites[485] = "╔ ";
+			pathSprites[461] = "╗ ";
+			pathSprites[359] = "╚ ";
+			pathSprites[335] = "╝ ";
 			}
 			
 		//WALLS
 			if(true){
 			//surrounded wall
-			wallSprites[511]="┼";
+			wallSprites[511]="┼ ";
 			
 			//corners
-			wallSprites[27] ="┌";
-			wallSprites[54] ="┐";
-			wallSprites[432]="┘";
-			wallSprites[216]="└";
+			wallSprites[27] ="┌ ";
+			wallSprites[54] ="┐ ";
+			wallSprites[432]="┘ ";
+			wallSprites[216]="└ ";
 			
 			//ROADBLOCK
 			wallSprites[477] =
@@ -505,47 +546,52 @@ public class Roads implements Runnable{
 			wallSprites[349] =	
 			wallSprites[373] = 	
 			wallSprites[501] =  	
-			wallSprites[375] ="╳";	
+			wallSprites[375] ="X ";	
 			
 			//edge ├
 			wallSprites[219] =
 			wallSprites[475] =
 			wallSprites[223] =
-			wallSprites[479] = "├";
+			wallSprites[479] = "├ ";
 			
 			//edge ┤
+			wallSprites[210] =
+			wallSprites[146] =
+			wallSprites[147] =
+			wallSprites[155] = 
 			wallSprites[438] =
 			wallSprites[503] =
 			wallSprites[439] =
-			wallSprites[502] = "┤";
+			wallSprites[502] = "┤ ";
 			
 			//edge ┬
 			wallSprites[383] =
 			wallSprites[63]  =
 			wallSprites[191] = 
 			wallSprites[319] =
-			wallSprites[127] = "┬";
+			wallSprites[127] = "┬ ";
 			
 			//edge ┴
 			wallSprites[504] =
 			wallSprites[505] =
 			wallSprites[508] =
-			wallSprites[509] = "┴";
+			wallSprites[509] = "┴ ";
 			
 			//inside corners ┼
+			wallSprites[218] =
 			wallSprites[446] =
 			wallSprites[506] = 
 			wallSprites[251] =
 			wallSprites[447] =
 			wallSprites[510] = 
 			wallSprites[255] =
-			wallSprites[507] = "┼";
+			wallSprites[507] = "┼ ";
 			
 			//corners next to roadblock
 			wallSprites[433] =
 			wallSprites[283] =
 			wallSprites[118] =
-			wallSprites[220] = "┼";
+			wallSprites[220] = "┼ ";
 			}
 		}
 	}

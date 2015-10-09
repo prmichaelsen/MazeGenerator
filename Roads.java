@@ -539,6 +539,14 @@ public class Roads implements Runnable{
 			wallSprites[216]="└ ";
 			
 			//WALL ROCK
+			
+			wallSprites[176] =
+			wallSprites[26] =
+			wallSprites[434] =
+			wallSprites[498] =
+			wallSprites[315] =
+			wallSprites[474] =
+			wallSprites[249] =
 			wallSprites[177]  =
 			wallSprites[347]  =
 			wallSprites[23]  =
@@ -550,7 +558,6 @@ public class Roads implements Runnable{
 			wallSprites[316] =
 			wallSprites[183] =
 			wallSprites[22] =
-			wallSprites[25] =
 			wallSprites[59] =
 			wallSprites[89] =
 			wallSprites[217] =
@@ -564,7 +571,6 @@ public class Roads implements Runnable{
 			wallSprites[444] =
 			wallSprites[304] =
 			wallSprites[112] =
-			wallSprites[24] =
 			wallSprites[275] =
 			wallSprites[151] =
 			wallSprites[436] =
@@ -580,17 +586,25 @@ public class Roads implements Runnable{
 			wallSprites[148] =
 			wallSprites[240] =
 			wallSprites[222] =	
+			wallSprites[123] =	
 			wallSprites[91]  = "# ";
 			
 			//ROCK BRIDGE
 			//DIAGONAL
+			wallSprites[20] =
+			wallSprites[80] =
 			wallSprites[17] =
 			wallSprites[274] =
 			wallSprites[153] =
-			wallSprites[273]  =
+			wallSprites[272] =
+			wallSprites[273]  = "# ";
 			//STRAIGHT
+			wallSprites[120]  = "# ";		//EAST WEST
+			wallSprites[403] =
 			wallSprites[402]  =
 			wallSprites[313]  =
+			wallSprites[120]  = "# ";
+			//ROCKBRIDGE JOINT
 			wallSprites[120]  = "# ";
 			
 			//ROCK BRIDGE CAP
@@ -598,6 +612,7 @@ public class Roads implements Runnable{
 			wallSprites[22]  =
 			wallSprites[18]  =
 			//EAST
+			wallSprites[25] =
 			wallSprites[48] =
 			wallSprites[52]  =
 			//SOUTH
@@ -614,8 +629,6 @@ public class Roads implements Runnable{
 			
 			
 			//ISOLATED ROCK
-			wallSprites[80] =
-					wallSprites[272] =
 			wallSprites[16]  = "# ";
 			
 			

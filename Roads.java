@@ -26,7 +26,7 @@ public class Roads implements Runnable{
 			UP_RIGHT_CORNER_WALL = 54,
 			UP_MID_WALL = 63,
 			NILL = 0;		
-	public static final int TILE_SIZE = 32;
+	public static final int TILE_SIZE = 16;
 	public static final int ROOM_HEIGHT = 1024+512;
 	public static final int ROOM_WIDTH = 1024+512;
 	public static final int ROAD_LENGTH = 3;
@@ -230,8 +230,8 @@ public class Roads implements Runnable{
 		this.roadLength=3;
 		this.roadWidth=1;
 		
-		this.roomWidth = 48*TILE_SIZE;
-		this.roomHeight = 48*TILE_SIZE;
+		this.roomWidth = 30*TILE_SIZE;
+		this.roomHeight = 30*TILE_SIZE;
 		
 		player = new Point(this.roomWidth/TILE_SIZE/2 ,this.roomHeight/TILE_SIZE/2 );
 		roomMap = new int[this.roomWidth/TILE_SIZE ][this.roomHeight/TILE_SIZE ];
@@ -554,7 +554,7 @@ public class Roads implements Runnable{
 			wallSprites[90] =
 			wallSprites[182]  =
 			wallSprites[221]=
-			wallSprites[48] =
+			wallSprites[30] =
 			wallSprites[316] =
 			wallSprites[183] =
 			wallSprites[22] =
@@ -613,7 +613,7 @@ public class Roads implements Runnable{
 			wallSprites[18]  =
 			//EAST
 			wallSprites[25] =
-			wallSprites[48] =
+			wallSprites[30] =
 			wallSprites[52]  =
 			//SOUTH
 			wallSprites[400] =

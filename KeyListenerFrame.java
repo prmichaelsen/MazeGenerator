@@ -54,8 +54,8 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 //				+ "creates a new maze"
 //				+ "\nr - road length (default 3)"
 //				+ "\nt - road thickness (default 1)" 
-//				+ "\nw - maze width (default 48)"
-//				+ "\nh - maze height (default 48)"
+//				+ "\nw - maze width (default 30)"
+//				+ "\nh - maze height (default 30)"
 //				+ "\n"
 //				+ "\n"
 //				+ "style [0-"+(Roads.styles.length-1)+"]"
@@ -88,7 +88,7 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 //				+ "\nHit enter to repeate"
 //				+ "\nthe last command!";
 //		
-		public static final int DEFAULT_REPLAY_SPEED = 100;
+		public static final int DEFAULT_REPLAY_SPEED = 250;
 		public static final int DEFAULT_GAME_SPEED = 25;
 		int replaySpeed = DEFAULT_REPLAY_SPEED;
 		int gameSpeedInMilli = 1000/DEFAULT_GAME_SPEED;
@@ -132,14 +132,9 @@ public class KeyListenerFrame extends JFrame implements KeyListener{
 	    
 	    //font families to collect the fonts of
 		private static String[] fonts = {
-				"consolas",
 				"courier new",
 				"lucida console",
 				"lettergothicstd",
-				"lucida sans typewriter",
-				"oratorstd",
-				"ocrastd",
-				"prestigeelitestd"
 		} ;
 		private int fontIndex = 0;
 		private String lastCommand;
